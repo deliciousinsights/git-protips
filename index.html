@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="fr">
+	<head>
+		<meta charset="utf-8">
+
+		<title>Git Pro Tips 2020 • Christophe Porteneuve @ France TV Éditions Numériques</title>
+
+		<meta name="description" content="1h30 de ProTips tous azimuths sur l’utilisation quotidienne de Git, à destination des équipes de France Télévisions Éditions Numériques, le 27/01/2020.">
+		<meta name="author" content="Christophe Porteneuve">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link href='css/fonts.css' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/animate.min.css">
+		<link rel="stylesheet" href="css/theme/sky.css" id="theme-basis">
+		<link rel="stylesheet" href="css/theme/pw15.css" id="theme">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/prism.css">
+
+		<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+		<script>
+    if (window.location.search.match(/print-pdf/gi)) {
+      var link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.type = 'text/css'
+      link.href = 'css/print/pdf.css'
+      document.getElementsByTagName('head')[0].appendChild(link)
+    }
+		</script>
+	</head>
+
+	<body id="prioFix">
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section id="mainTitle">
+					<h1>Git Pro Tips • Édition 2020</h1>
+					<p>
+						Une présentation de <a href="http://tddsworld.com/">Christophe Porteneuve</a> chez France TV Éditions Numériques</a>
+					</p>
+				</section>
+
+				<section id="whoami">
+					<h2>whoami</h2>
+
+					<pre><code data-trim class="language-js">
+const christophe = {
+  family: { wife: 'Élodie', sons: ['Maxence', 'Elliott'] },
+  city: 'Paris, FR',
+  company: 'Delicious Insights',
+  trainings: ['Git Total', 'ES Total', 'Web Apps Modernes', 'Node.js', 'Webpack', 'Archi. CSS'],
+  webDevSince: 1995,
+  mightBeKnownFor: [
+    'dotJS',
+    'Paris Web',
+    'NodeSchool Paris',
+    'Prototype.js',
+    'Prototype and Script.aculo.us',
+  ],
+}
+          </code></pre>
+        </section>
+
+        <section id="svn-in-git">
+          <h2>« Faire du SVN avec Git »</h2>
+
+          <p>L’éternelle histoire du changement de paradigme…</p>
+          <p>Ou : trimballer sa culture existante dans son nouvel environnement.</p>
+          <p>Erreur tragique mais ô combien courante</p>
+          <ul>
+            <li>Java ➜ Ruby</li>
+            <li>Java ➜ JavaScript / Node</li>
+            <li>SVN ➜ Git</li>
+            <li>SGBD/R ➜ CouchDB/MongoDB</li>
+            <li>etc.</li>
+          </ul>
+        </section>
+
+        <section id="goals" data-time="5">
+          <h2>Objectifs &amp; Philosophie</h2>
+
+          <ul>
+            <li>
+              <strong>Maintenabilité</strong>
+              <ul>
+                <li class="fragment">Graphe lisible + pertinent</li>
+                <li class="fragment">Commits atomiques, homogènes, compréhensibles, peu défectueux</li>
+                <li class="fragment">Workflow propre</li>
+              </ul>
+            </li>
+            <li class="fragment current-visible"><strong>Tolérance à l’erreur</strong></li>
+            <li class="fragment overlay-previous"><strong>Tolérance à l’humain 😉</strong></li>
+          </ul>
+        </section>
+
+        <section>
+					<section id="commits">
+            <h1>Des commits atomiques</h1>
+            <h3>qui chatoyent</h3>
+					</section>
+
+          <section id="commits-why-atomicity">
+            <h2>Atomiques pourquoi ?</h2>
+
+
+            <p>Arrêtez de foutre n’importe quoi dans vos commits.</p>
+            <p>1 commit = 1 périmètre réduit, d’un coup, ni plus, ni moins.</p>
+            <p class="breathing">Pour y arriver, il faut maîtriser <code>add</code> et <code>reset</code>, mais aussi <code>diff</code>, <code>show</code> et bien entendu <code>commit</code>.</p>
+          </section>
+
+          <section id="commits-status-untracked">
+            <h2>Un statut détaillé</h2>
+
+
+            <pre class="command-line" data-prompt="$"><code class="language-bash">
+              git config --global alias.st status
+              git config --global <u>status.showUntrackedFiles</u> all
+              git config --global <u>color.ui</u> auto
+            </code></pre>
+            <pre class="command-line" data-prompt="$" data-output="2-8"><code class="language-bash">
+              git st
+              …
+              Untracked files:
+                (use "git add &lt;file>..." to include in what will be committed)
+
+                <u>vendor/scripts/bootstrap.min.js</u>
+                <u>vendor/scripts/jquery.min.js</u>
+                <u>vendor/scripts/underscore.js</u>
+            </code></pre>
+          </section>
+
+          <section id="neat-diff">
+            <h2>Un diff sympa</h2>
+
+            <pre class="command-line" data-prompt="$" data-output="5,9"><code class="language-bash">
+              git config --global <u>diff.mnemonicPrefix</u> true
+              git config --global <u>diff.renames</u> true
+              git config --global <u>diff.submodule</u> log
+              git config --global <u>diff.wordRegex</u> .
+
+              git config --global color.diff.meta yellow bold
+              git config --global color.diff.frag magenta bold
+              git config --global color.diff.whitespace red reverse
+
+              npm install -g diff-so-fancy
+              git config --global <u>pager.diff</u> diff-so-fancy
+              git config --global <u>pager.show</u> diff-so-fancy
+            </code></pre>
+          </section>
+
+          <section id="commits-stage">
+            <h2>Comprendre le <span lang="en">stage</span></h2>
+
+            <p>Le <span lang="en">stage</span> ou l’index : ce qui est validé pour partir au commit.</p>
+            <p>Permet de sculpter finement le commit à venir.</p>
+            <p class="breathing"><code>git add <em>pathspec…</em></code> = « prends <em>pathspec</em> en photo et mets ça dans le colis du prochain commit ».</p>
+            <p>Synonyme : <code>git stage</code>. <strong>Rien à voir</strong> avec <code>svn add</code>.</p>
+            <p><strong>Obligatoire</strong> pour versionner un <strong>nouveau</strong> fichier (<span lang="en">untracked</span>), contrairement à quand le fichier est déjà versionné.</p>
+            <p>(À ce sujet, si vous voulez voir un nouveau fichier dans votre diff sans le <em>stager</em> d’entrée de jeu, <code>git add -N</code>)</p>
+          </section>
+
+          <section id="commits-diff-staged">
+            <h2>Voir le <span lang="en">stage</span></h2>
+
+            <div class="two-columns halves">
+              <div>
+                <p>Version diff :</p>
+
+                <pre class="command-line" data-prompt="$" data-output="2-10"><code class="language-bash">
+                  git diff <u>--staged</u>
+                  diff --git <u>c</u>/index.html <u>i</u>
+                  index 5237399..85e642f 100644
+                  --- <u>c</u>/index.html
+                  +++ <u>i</u>/index.html
+                  @@ -1,5 +1,5 @@
+                  &lt;!doctype html&gt;
+                  -&lt;html&gt;
+                  +&lt;html lang="fr"&gt;
+                </code></pre>
+              </div>
+              <div>
+                <p>Version snapshot (tout le fichier) :</p>
+
+                <pre class="command-line" data-prompt="$" data-output="2-10"><code class="language-bash">
+                  git show <u>:0:index.html</u>
+                  &lt;!doctype html&gt;
+                  &lt;html lang="fr"&gt;
+                  &lt;head&gt;
+                  …
+                </code></pre>
+              </div>
+            </div>
+            <footer>(attention, le diff par défaut est entre le <em>stage</em> et le WD)</footer>
+          </section>
+
+          <section id="commits-diff-w">
+            <h2>Dépolluer le diff</h2>
+
+            <p>Les whitespaces, le plus souvent, OSEF.</p>
+
+            <div class="two-columns halves">
+              <div>
+                <pre class="command-line" data-prompt="$" data-output="2-10"><code class="language-bash">
+                  git diff
+                  …
+                  &lt;!doctype html&gt;
+                  -&lt;html&gt;
+                  +&lt;html lang="fr"&gt;
+                  &lt;head&gt;
+                  -  &lt;meta charset="utf-8"&gt;
+                  -  &lt;title&gt;Git ProTips&lt;/title&gt;
+                  +  <u>  </u>&lt;meta charset="utf-8"&gt;
+                  +  <u>  </u>&lt;title&gt;Git <u> </u>ProTips&lt;/title&gt;
+                  …
+              </code></pre>
+              </div>
+              <div>
+                <pre class="command-line" data-prompt="$" data-output="2-10"><code class="language-bash">
+                  git diff <u>-w</u>
+                  …
+                   &lt;!doctype html&gt;
+                  -&lt;html&gt;
+                  +&lt;html lang="fr"&gt;
+                   &lt;head&gt;
+                  …
+                </code></pre>
+
+                <pre class="command-line" data-prompt="$" data-output="2-10"><code class="language-bash">
+                  git diff -w <u>--word-diff</u>
+                  …
+                  &lt;!doctype html&gt;
+                  &lt;html<u>{+ lang="fr"+}</u>&gt;
+                  …
+                </code></pre>
+              </div>
+            </div>
+            <p>Mais aussi façon agrégats : <code>git diff --stat</code> et <code>git diff --dirstat</code></p>
+          </section>
+
+          <section id="commits-add-patch">
+            <h2>Fragments de fichiers</h2>
+
+            <p>Qui a dit qu’on devait <span lang="en">stager</span> tout le fichier d’un coup ?</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+              git add <u>-p</u> index.html
+              …
+              &lt;!doctype html&gt;
+              -&lt;html&gt;
+              +&lt;html lang="fr"&gt;
+              &lt;head&gt;
+              …
+              Stage this hunk [y,n,q,a,d,/,j,J,g,e,?]? <u>y</u>
+              …
+                &lt;h1&gt;Git ProTips&lt;/h1&gt;
+              +  &lt;footer&gt;© 2020 Ma Boîte&lt;/footer&gt;
+              …
+              Stage this hunk [y,n,q,a,d,/,K,g,e,?]?  <u>n</u>
+            </code></pre>
+
+            <p>Juste <strong>critique</strong> parce que dans la vraie vie, on a toujours 2–3 sujets distincts en cours dans un même fichier…</p>
+          </section>
+
+          <section id="commits-unstage">
+            <h2>Unstage</h2>
+
+            <p>Sortir un snapshot du <span lang="en">stage</span> : <code>git reset</code> (historique) ou <code>git restore --staged</code> (2.23+, août 2019).</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+              git <u>restore --staged index.html</u>
+            </code></pre>
+
+            <p>Annuler tout le <span lang="en">stage</span> :</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+              git <u>reset</u>
+              Unstaged changes after reset:
+              M      index.html
+            </code></pre>
+
+            <p><a href="https://www.youtube.com/watch?v=GWC7TWC3s0s">La petite vidéo en français qui va bien</a></p>
+          </section>
+
+          <section id="commits-reset-patch">
+            <h2>Unstage partiel</h2>
+
+            <p>C’est comme pour l’ajout : on peut n’<span lang="en">unstager</span> que certains fragments.</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+              git restore --staged <u>-p</u> index.html
+              …
+              …
+              &lt;!doctype html&gt;
+              -&lt;html&gt;
+              +&lt;html lang="fr"&gt;
+              &lt;head&gt;
+              …
+              <u>Unstage</u> this hunk [y,n,q,a,d,/,j,J,g,e,?]? <u>n</u>
+              …
+                &lt;h1&gt;Git ProTips&lt;/h1&gt;
+              +  &lt;footer&gt;© 2020 Ma Boîte&lt;/footer&gt;
+              …
+              <u>Unstage</u> this hunk [y,n,q,a,d,/,K,g,e,?]?  <u>y</u>
+            </code></pre>
+          </section>
+
+          <section id="commits-amend">
+            <h2>Retoucher le dernier commit</h2>
+
+            <p class="breathing"><code>git commit --amend</code> <strong>remplace</strong> par l’état courant.</p>
+
+            <pre class="command-line" data-prompt="$"><code class="language-bash">git config --global <u>alias.oops</u> commit <u>--amend --no-edit</u></code></pre>
+
+            <p>Oublié de versionner une dépendance ?</p>
+
+            <pre class="command-line" data-prompt="$"><code class="language-bash">
+              git <u>add</u> vendor/scripts/underscore.min.js
+              git <u>oops</u>
+            </code></pre>
+
+            <p>Versionné un fichier sensible ?</p>
+
+            <pre class="command-line" data-prompt="$"><code class="language-bash">
+              git <u>rm --cached</u> config/database.yml
+              echo config/database.yml >> .gitignore &amp;&amp; git add .gitignore
+              git <u>oops</u>
+            </code></pre>
+
+            <p>Foiré le message ?</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+              git oops <u>-m</u> 'Le message ni énervé ni bourré de fautes'
+            </code></pre>
+          </section>
+
+          <section id="commits-show">
+            <h2>Visualiser un commit, un snapshot</h2>
+
+            <p><code>git show [object]</code> permet d’afficher au mieux un commit (par défaut <code>HEAD</code>), une arbo, un snapshot (blob)…</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+              <u>git show</u> # ou explicitement : git show HEAD
+              commit 8a5a383
+              Author: Christophe Porteneuve &lt;christophe@delicious-insights.com&gt;
+              Date:   Sun Oct 26 15:04:17 2014 +0100
+
+                  Premier index
+
+              diff --git a/index.html b/index.html
+              …
+            </code></pre>
+
+            <p>Le contenu de <code>app/initialize.js</code> en branche <code>legacy</code> ?</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+              git show <u>legacy:app/initialize.js</u>
+              'use strict';
+              …
+            </code></pre>
+          </section>
+
+          <section id="commits-stash-save">
+            <h2>Le stash… mais bien</h2>
+
+            <p>Histoire d’avoir <strong>les <span lang="en">untracked</span></strong> et <strong>un message utile</strong> :</p>
+
+            <pre class="command-line" data-prompt=" " data-output="2-20"><code class="language-bash">
+<i>(master <u>*+%</u>) $</i> <u>git stash push -u -m</u> 'migration BS3'
+Saved working directory and index state On master: migration BS3
+HEAD is now at 8a5a383 Trackers GA asynchrones
+<i>(master <u>$</u>) $</i>
+            </code></pre>
+
+            <p>Pour que votre prompt* vous rappelle que vous avez du stash, pensez à activer la variable d’environnement <code>GIT_PS1_SHOWSTASHSTATE</code>, qui y ajoutera un <code>$</code>.</p>
+
+            <footer>* oh oui, donne-moi un <a href="https://gist.github.com/tdd/473838#file-config-bash-pour-un-prompt-git-de-tueur-bash">prompt qui déboîte</a> !</footer>
+          </section>
+
+          <section id="commits-stash-pop">
+            <h2>Attention ça stashe</h2>
+
+            <p>Pour récupérer le stash, évitez <code>apply</code>, préférez un <code>pop</code> :</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+(master $) $ <u>git stash pop --index</u>
+…
+(master *+%) $
+            </code></pre>
+
+            <p class="breathing"><code>pop</code> tente l’<code>apply</code>, et s’il marche enchaîne avec <code>drop</code>.  Rien de pire que de laisser traîner un stash réintégré…</p>
+
+            <p>Même s’il stocke le <span lang="en">stage</span> par défaut, le stash <strong>ne le restaure pas par défaut</strong>, pour éviter des « fusions auto » dans le <span lang="en">stage</span>.  Pas très cohérent avec ce que fait par exemple <code>merge</code>, mais bon…  Donc tentez toujours d’abord <code>--index</code>.</p>
+          </section>
+				</section>
+
+				<section>
+          <section id="logs">
+            <h1>Des logs utiles</h1>
+            <h3>Passer la 5ème avec git log</h3>
+          </section>
+
+          <section id="logs-lg">
+            <h2>Un format pertinent</h2>
+
+            <pre class="command-line" data-prompt="$"><code class="language-bash">
+              LOG_FORMAT='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%an %ad)%Creset'
+              git config --global <u>alias.lg</u> "log <u>--graph</u> --date=relative <u>--pretty=tformat:</u>'$LOG_FORMAT'"
+              git config --global <u>log.abbrevCommit</u> true
+              git config --global <u>log.follow</u> true
+              git config --global <u>grep.extendedRegexp</u> true
+            </code></pre>
+
+            <img src="images/git-lg.png" alt="Exemple d‘affichage de git lg">
+
+            <footer>(rassurez-vous, c’est dans <a href="https://gist.github.com/tdd/470582">cette config</a>)</footer>
+          </section>
+
+          <section id="logs-limiting-1">
+            <h2>Filtrer et limiter</h2>
+
+            <p>Par références aval/amont</p>
+            <pre class="command-line" data-prompt="$"><code class="language-bash">
+              git lg <i>[ref…]</i> <i>[</i>^<i>neg-ref…]</i> # Liste spécifique aval
+              git lg <i>ref</i>.. # Amont
+              git lg [--branches<i>[=glob]|</i>--tags<i>[=glob]|</i>--all<i>]</i> <i>[</i>--exclude<i>=glob]</i> # Wildcards aval
+              git lg -<i>n</i> # Nombre de commits listés
+            </code></pre>
+
+            <p>Par métadonnées</p>
+
+            <pre class="command-line" data-prompt="$"><code class="language-bash">
+              git lg --grep <i>'fragment du message complet'</i> <i>[</i>--invert-grep<i>] [</i>--all-match<i>] [</i>-i<i>]</i>
+              git lg --author <i>'fragment du noms e-mail de l’auteur·e'</i> <i>[</i>-i<i>]</i>
+              git lg --<i>[</i>no-<i>]</i>merges
+              git lg -- <i>pathspec…</i>
+            </code></pre>
+
+            <p>Évidemment combinable à l’infini</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+$ git lg --author=patter --grep '^Merge' -10 -- activerecord activemodel
+            </code></pre>
+          </section>
+
+          <section id="logs-divergence">
+            <h2>Loguer la divergence</h2>
+
+            <p>Besoin de voir les commits uniques de 2 branches/tags ? (en gros, remonter juste à leur ancêtre commun).<br/>
+              Utilisez <code>A...B</code>.</p>
+
+            <pre class="command-line" data-prompt="$"><code class="language-bash">
+              git lg <i>[</i>--right-only<i>|</i>--left-only<i>]</i> <i>ref1</i>...<i>ref2</i>
+            </code></pre>
+
+            <div class="two-columns">
+              <div>
+                <img src="images/git-divergence-full.png" alt="Le graphe complet">
+              </div>
+              <div>
+                <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+                  git lg master<u>..</u>bootstrap3-to-rebase
+                </code></pre>
+
+                <img src="images/git-divergence-none.png" alt="Le graphe mal listé">
+
+                <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+                  git lg master<u>...</u>bootstrap3-to-rebase
+                </code></pre>
+
+                <img src="images/git-divergence-cut.png" alt="Le listing limité à la divergence">
+          </div>
+            </div>
+          </section>
+
+          <section id="logs-diff-search">
+            <h2>Trouver le coupable</h2>
+
+            <p><code>git blame</code>, c’est comme le H de Hawaii : <strong>ça ne sert à rien</strong>.</p>
+
+            <p>Préférez chercher sur <strong>les contenus actifs des diffs</strong> : c’est plus pertinent <em>et</em> ça marche aussi pour des lignes virées !</p>
+
+            <p>Options <code>-S</code>* (insertions OU suppressions) et <code>-G</code> (tous diffs).</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+git lg <u>-S "Donec sed"</u> -1 <u>-p</u> index.html
+...
+* 6d731f3 - Content tweaks (Christophe Porteneuve 1 year, 1 month ago)
+…
+| @@ -60,18 +60,18 @@
+…
+| &lt;h2&gt;Three-point rebasing&lt;/h2&gt;
+| - &lt;p&gt;<u>Donec sed</u> odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa.&lt;/p&gt;
+| + &lt;p&gt;Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa.&lt;/p&gt;
+| &lt;p&gt;&lt;a class="btn" href="#"&gt;View details &raquo;&lt;/a&gt;&lt;/p&gt;
+…
+            </code></pre>
+
+            <footer>* si <code>-S</code> avec une regex, ajoutez <code>--pickaxe-regex</code></footer>
+          </section>
+
+          <section id="logs-line-filtering">
+            <h2>Fragments &amp; fonctions</h2>
+
+            <p>Il y a un filtrage de fou sur le log : par fragment de fichier, notamment par <strong>corps de fonction</strong>.  On utilise soit un intervalle (ex. <code>-L 1,100:index.html</code>) soit en fournissant une regex pour la fonction englobante :</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-100"><code class="language-bash" style="font-size: 65%">
+git lg <u>-L :getCheckIns:</u>app/lib/persistence.js
+* 12164bc - Refactoring gestion Check-In Details, et gestion corner-cases (Christophe Porteneuve 2 days ago)
+|
+| <span class="yellow">diff --git a/spa-final/app/lib/persistence.js b/spa-final/app/lib/persistence.js</span>
+| <span class="yellow">--- a/spa-final/app/lib/persistence.js</span>
+| <span class="yellow">+++ b/spa-final/app/lib/persistence.js</span>
+| @@ -81,4 +86,7 @@
+|  function <u>getCheckIns</u>() {
+| -  return collection.toJSON();
+| +  return collection.map(modelWithCid);
+|  }
+|
+* d714350 - Initial import (Christophe Porteneuve 1 year ago)
+
+  <span class="yellow">diff --git a/app/lib/persistence.js b/app/lib/persistence.js
+  --- /dev/null
+  +++ b/app/lib/persistence.js</span>
+  @@ -0,0 +34,4 @@
+  <span class="green">+function <u>getCheckIns</u>() {
+  +  return collection.toJSON();
+  +}</span>
+            </code></pre>
+          </section>
+        </section>
+
+        <section>
+          <section id="pushes">
+            <h1>Des pushes choisis</h1>
+            <h3>Et pas trop fréquents</h3>
+          </section>
+
+          <section id="pushes-default">
+            <h2>Faut pas pousser</h2>
+            <h3>les autres branches</h3>
+
+            <p>Par défaut, sur un <code>git push</code> seul, Git va tenter l’actuelle si trackée de même nom*</p>
+
+            <p>Ce qu’on veut : l’actuelle, quel que soit le nom distant.</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+              git config --global <u>push.default upstream</u>
+            </code></pre>
+
+            <p>Et par ailleurs, on aimerait bien auto-pusher les tags annotés locaux qui deviendraient disponibles sur le remote :</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+              git config --global <u>push.followTags true</u>
+            </code></pre>
+
+            <footer>* push.default = simple</footer>
+          </section>
+
+          <section id="pushes-set-upstream">
+            <h2>Push initial</h2>
+            <h3>Une bonne 1ère impression</h3>
+
+            <p>La première fois que vous poussez une branche que vous voulez tracker ensuite, pensez à caler à la volée le tracking :</p>
+
+            <pre class="command-line" data-prompt=" " data-output="2-20"><code class="language-bash">
+<i>(stats-v3) $</i> git push <u>-u</u> origin stats
+Counting objects: 5, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (5/5), 488 bytes | 0 bytes/s, done.
+Total 5 (delta 0), reused 0 (delta 0)
+To git@github.com:tdd/private-tests.git
+ * <u>[new branch]      stats -> stats</u>
+<u>Branch stats set up to track remote branch stats from origin.</u>
+            </code></pre>
+          </section>
+
+          <section id="pushes-rebase-i">
+            <h2>Nettoyer avant push</h2>
+            <h3>Le bordel OK, mais chez toi</h3>
+
+            <p>Réflexe pré-push : nettoyer ton historique local, lequel est <a href="https://delicious-insights.com/fr/articles/bien-utiliser-git-merge-et-rebase/#nettoyer-son-historique-local-avant-envoi">forcément plus ou moins en bordel</a>.</p>
+
+            <pre class="command-line" data-prompt="$"><code class="language-bash">
+              git lg @{u}..
+              git rebase -i
+            </code></pre>
+
+            <p class="breathing">Le <strong>rebase interactif</strong> nous permet de mettre au propre nos travaux locaux avant de partager tout ça avec les copains.</p>
+            <p>Raison de plus pour <strong>ne pas faire de pushes trop souvent</strong>. On est pas en SVN, les copains !  On pond des commits souvent (10–30 &times/j), mais on push plus rarement (2–3 &times/j)</p>
+          </section>
+
+          <section id="pushes-pull-merge">
+            <h2>Pull ≠ Merge !</h2>
+            <h3>C’est vrai, quoi, merde.</h3>
+
+            <p>Par défaut, <code>git pull</code> finit par un <code>merge</code>. C’est <strong><a href="https://delicious-insights.com/fr/articles/bien-utiliser-git-merge-et-rebase/#le-pi-ge-de-git-pull-et-du-r-flexe-pull-push">super con</a></strong>.</p>
+
+            <p>Quand tu pull, tu ne fusionnes pas une branche tierce chez toi : tu récupères les mises à jour sur ta branche courante.</p>
+
+            <p>En plus, ça pourrit le graphe :</p>
+
+            <img src="images/git-pull-merge-bleark.png" alt="Un graphe dégueulassé par le pull qui merge">
+          </section>
+
+          <section id="pushes-pull-rebase-preserve">
+            <h2>Pull = Rebase</h2>
+
+            <p>Un <code>pull</code> devrait plutôt <strong>rejouer notre taf local sur la branche distante à jour</strong> : par définition, un <code>rebase</code>.</p>
+
+            <p>Il faut juste <a href="https://delicious-insights.com/fr/articles/bien-utiliser-git-merge-et-rebase/#le-cas-pineux-du-pull-qui-rebase-un-merge-local">faire attention</a> à ne pas <span lang="en">inliner</span> par inadvertance un <code>merge</code> au sein du travail local.</p>
+
+            <p>Une bonne fois pour toutes :</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+              git config --global <u>pull.rebase merges</u>
+            </code></pre>
+          </section>
+				</section>
+
+				<section>
+          <section id="branches">
+            <h1>Des branches nickel</h1>
+          </section>
+
+          <section id="branches-vv-a">
+            <h2>Mieux voir les branches</h2>
+
+            <p>Deux options utiles pour <code>git branch</code> :</p>
+            <p><code>-a</code> liste les locales <em>et</em> les distantes</p>
+            <p><code>-vv</code> ajoute les 1ères lignes de commit et, pour les trackées, l'état du tracking</p>
+
+            <pre class="command-line" data-prompt=" " data-output="2-100"><code class="language-bash">
+<i>(2019-octobre u+1) $</i> git branch <u>-avv</u>
+* 2019-octobre                 abaca0f [origin/2019-octobre: <u>ahead 1</u>] Retrait vieilles demos
+  legacy                       41b5bf7 [origin/legacy] Script Bash de packaging + déploiement du fichier Zip de debrief (exécutable par Chris seul vu les droits SSH requis)
+  master                       0208acb [origin/master] Fix .groc.json
+  v2018                        521350a [origin/v2018: <u>behind 2</u>] Backport changement cible lien plugins Backbone vers backplug.io
+  v2017                        27b1791 [origin/v2017: <u>gone</u>] MàJ docs annotés
+  remotes/origin/2017-octobre  10ad1b1 MàJ code source annoté
+  remotes/origin/bs3           49bc984 Tweaks en cours de session
+  remotes/origin/bs3-basis     650f025 Tweak export connectivity
+…
+            </code></pre>
+          </section>
+
+          <section id="branches-merge">
+            <h2>Fusions</h2>
+
+            <p>On ne fusionne que pour rapatrier de <strong>façon visible</strong> (bosse dans le graphe)<br/>
+              un <strong>périmètre fonctionnel identifié</strong> (bugfix, feature, story, etc.).</p>
+
+            <pre class="command-line" data-prompt="$"><code class="language-bash">
+              git config --global <u>core.whitespace</u> '-trailing' # OSEF des écarts de whitespace en fin de ligne
+              git config --global <u>merge.conflictStyle</u> diff3   # J’aime bien avoir le chunk « ancêtre commun »
+              git config --global <u>merge.log true</u>              # Ou un nombre de commits, par défaut 25
+              git config --global <u>merge.ff</u> false              # Un merge doit rarement être fast-forward
+            </code></pre>
+
+            <p>Le process classique et sûr :</p>
+
+            <pre class="command-line" data-prompt="$"><code class="language-bash">
+              git status             # Quelle est l’étendue des dommages ?
+              git mergetool path     # Si on en a (+ veut) un, pour le fichier concerné
+              git add path           # Fichier par fichier, après l’avoir arbitré
+              git commit [--no-edit] # Une fois que tout est staged
+            </code></pre>
+          </section>
+
+          <section id="branches-cherry-picking">
+            <h2>Cherry-picking</h2>
+
+            <p>Récupérer un commit unique, sans son historique. Parfait pour les fixes et tout ce qu’on trouve dans une branche de release, à réintégrer ailleurs (ex. <code>master</code>).</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+              git <u>cherry-pick -x</u> 3-2-stable
+            </code></pre>
+
+            <p>On liste les commits candidats avec <code>git log --cherry</code> (je préfère à <code>git cherry</code>) :</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+              git <u>lg --cherry HEAD...topic</u>
+              <u>*</u> 363f53d - (topic) Nav stats (Christophe Porteneuve 1 year, 1 month ago)
+              <u>=</u> ba05b8d - Stats JS (Christophe Porteneuve 1 year, 1 month ago)
+              <u>*</u> 3abb73d - /img/ -> /images/ (Christophe Porteneuve 1 year, 1 month ago)
+            </code></pre>
+          </section>
+
+          <section id="branches-conflict-method">
+            <h2>Arbitrer un conflit</h2>
+
+            <p>La plupart des conflits sont <strong>simples à arbitrer</strong>. Il faut juste la bonne méthodo :</p>
+
+            <pre class="command-line" data-prompt="$" data-output="1,3,5,7,9,11,13"><code class="language-bash">
+              # Qui est le prochain coupable ?
+              git status
+              # On édite le fichier en direct, ou si on a un bon outil dédié configuré…
+              git mergetool <i>path</i>
+              # Une fois que les conflits sont réglés*, on le dit :
+              git add <i>path</i>
+              # Si on a mal arbitré (notammment mergetool) ou que le style de marqueurs nous gêne :
+              git checkout --conflict=<i>(</i>merge<i>|</i>diff3<i>) path</i>
+              # Besoin de voir un des 3 snapshots sans mergetool ?
+              git show <i>(</i>ref<i>|</i>MERGE_HEAD<i>|</i>HEAD<i>|</i>:1<i>)</i>:<i>path</i>
+              # Envie de récupérer le fichier tel quel depuis une des branches, ou ailleurs ?
+              git checkout <i>ref</i> <i>[</i>--<i>]</i> <i>path</i>
+              # Ou la version verbeuse : git restore --source=ref --staged --worktree [--] path
+            </code></pre>
+
+            <footer>* C‘est ça qui est souvent simple mais peut parfois nécessiter plus d’infos</footer>
+          </section>
+
+          <section id="branches-conflict-show">
+            <h2>Voir les snapshots</h2>
+
+            <p>Parfois le diff ne suffit pas, notamment quand le code en conflit
+            fait référence à d’autres parties du code qui ont, elles, bien
+            fusionné, noyant le contexte. Disons qu’on a fait un <code>git merge truth</code> dans <code>master</code>.</p>
+
+            <p>On peut alors ressortir les snapshots côté récipient :</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+              git show <u>:2</u>:intro.md
+              # ou : git show HEAD:intro.md
+              # ou : git show master:intro.md
+            </code></pre>
+
+            <p>Côté source du code fusionné :</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+              git show <u>:3</u>:intro.md
+              # ou : git show MERGE_HEAD:intro.md
+              # ou : git show truth:intro.md
+            </code></pre>
+
+            <p>Dans l’ancêtre commun (avant la divergence) :</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+              git show <u>:1</u>:intro.md
+            </code></pre>
+          </section>
+
+          <section id="branches-log-merge">
+            <h2>Log de la divergence lors d’un conflit</h2>
+
+            <p>Très rarement, même les snapshots ne suffisent pas à comprendre
+            le problème, et on veut retracer le cheminement du code depuis
+            l’ancêtre commun jusqu’aux têtes de branches.</p>
+            <p>C’est faisable à tout moment avec la syntaxe <code>A...B</code>
+            déjà vue, mais lors d’une fusion Git a déjà tout le contexte, il
+            suffit de faire un <code>--merge</code> (les variantes
+            <code>--left-only</code> et <code>--right-only</code> marchent
+            toujours) :</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+              git lg <u>--merge</u> -p intro.md
+              * 9d8dafd - <u>(truth)</u> Truth (Christophe Porteneuve 12 minutes ago)
+              <i>…et ici le diff…</i>
+              * f068b20 - <u>(HEAD, master)</u> Disinfo (Christophe Porteneuve 12 minutes ago)
+              <i>…et ici le diff…</i>
+            </code></pre>
+          </section>
+
+          <section id="branches-merge-abort">
+            <h2>Lâcher l’affaire ?</h2>
+
+            <p>Si <strong>vraiment</strong> tu n’y arrives pas pour le moment (manque d’infos), annule la fusion proprement :</p>
+
+            <pre class="command-line" data-prompt="$" data-output="2-20"><code class="language-bash">
+              git merge <u>--abort</u>
+              # Anciennement : git reset --merge
+            </code></pre>
+
+            <p>Nettement plus propre et moins dangereux qu’un <code>git reset
+            --hard</code>.  Préserve tes modifs locales pré-fusion.</p>
+
+            <footer>Note que les sous-commandes <code>--abort</code>,
+            <code>--skip</code> et <code>--continue</code> sont disponibles pour
+            <code>merge</code>, <code>rebase</code> et
+            <code>cherry-pick</code>.</footer>
+          </section>
+
+          <section id="branches-rerere">
+            <h2>Solve once</h2>
+            <h3>Merge anywhere</h3>
+
+            <p>
+              <strong>rerere</strong> :
+              <span lang="en"><strong>re</strong>use
+              <strong>re</strong>corded
+              <strong>re</strong>solution</span>
+            </p>
+
+            <p>Prend deux empreintes complètes pour chaque conflit (dénuée du chemin, etc.) : une au conflit, une au commit.</p>
+
+            <p class="breathing">Assiste les conflits ultérieurs sur le dépôt en ré-utilisant ces empreintes en cas de résolution antérieure.</p>
+
+            <pre class="command-line" data-prompt="$"><code class="language-bash">
+              git config --global rerere.enabled true
+              git config --global rerere.autoupdate true # seulement pour les gens attentifs !
+            </code></pre>
+
+            <p>Activé aussi par la présence de <code>.git/rr-cache</code></p>
+
+            <p><a href="https://delicious-insights.com/fr/articles/git-rerere/">Tous les détails et la notion de merges de contrôle</a>.</p>
+          </section>
+        </section>
+
+        <section id="learn-more">
+          <h2>Envie d’en savoir plus ?</h2>
+
+          <p>
+            Quelques-uns de nos articles Git : sur<br/>
+            <a href="https://delicious-insights.com/fr/articles/bien-utiliser-git-merge-et-rebase/">merge vs. rebase</a>,
+            <a href="https://delicious-insights.com/fr/articles/git-rerere/">rerere</a>,
+            <a href="https://delicious-insights.com/fr/articles/git-log/">le log</a>,
+            <a href="https://delicious-insights.com/fr/articles/git-reset/">reset</a>,
+            <a href="https://delicious-insights.com/fr/articles/git-bisect/">bisect</a>,
+            <a href="https://delicious-insights.com/fr/articles/git-workflows-generality/">les workflows</a>,
+            <a href="https://delicious-insights.com/fr/articles/git-hooks-commit/">les hooks</a>,
+            <a href="https://delicious-insights.com/fr/articles/git-submodules/">les submodules</a>…
+          </p>
+
+          <p><strong><a href="https://delicious-insights.com/fr/formations/git-total/">Notre formation Git qui envoie du pâté</a></strong> (en inter-entreprises comme en intra chez vous !)</p>
+
+          <p>On a des
+            <a href="https://cours-video.delicious-insights.com/">cours vidéos</a> sur Git,
+            dont un <strong><a href="https://cours-video.delicious-insights.com/git-concepts">gratuit indispensable</a></strong>
+            qu’on retrouve également
+            <a href="https://www.youtube.com/watch?v=v2qenbXaarM&list=PLPoAfTkDs_JbMPY-BXzud0aMhKKhcstRc">sur YouTube</a>.
+          </p>
+        </section>
+
+        <section id="thank-you">
+          <h1>Merci !</h1>
+          <h3>Et que Git soit avec vous</h3>
+          <br>
+          <p>Christophe Porteneuve</p>
+          <p><a href="https://twitter.com/porteneuve">@porteneuve</a></p>
+
+          <p class="breathing">
+            Les slides sont sur <a href="https://bit.ly/ftv-git">bit.ly/ftv-git</a><br/>
+          </p>
+        </section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+    <script src="plugin/highlight/prism.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+      // Full list of configuration options available here: // https://github.com/hakimel/reveal.js#configuration
+      /* global Reveal */
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        width: '95%',
+        height: '90%',
+
+        theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+        transition: Reveal.getQueryHash().transition || 'linear', // default/cube/page/concave/zoom/linear/fade/none
+
+        // Parallax scrolling
+        // parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+        // parallaxBackgroundSize: '2100px 900px',
+
+        // Optional libraries used to extend on reveal.js
+        dependencies: [
+          { src: 'lib/js/classList.js', condition: function () { return !document.body.classList } },
+          { src: 'plugin/markdown/marked.js', condition: function () { return !!document.querySelector('[data-markdown]') } },
+          { src: 'plugin/markdown/markdown.js', condition: function () { return !!document.querySelector('[data-markdown]') } },
+          { src: 'plugin/zoom-js/zoom.js', async: true, condition: function () { return !!document.body.classList } },
+          { src: 'plugin/notes/notes.js', async: true, condition: function () { return !!document.body.classList } }
+        ]
+      })
+		</script>
+
+	</body>
+</html>
