@@ -21,7 +21,7 @@
 
     <!-- Code syntax highlighting -->
     <link rel="stylesheet" href="lib/css/prism.css">
-
+    
 		<!-- If the query includes 'print-pdf', include the PDF print sheet -->
 		<script>
     if (window.location.search.match(/print-pdf/gi)) {
@@ -41,31 +41,23 @@
 			<!-- Any section element inside of this container is displayed as a slide -->
 			<div class="slides">
 				<section id="mainTitle">
+          <img class="git-logo" src="images/logo_git-total.png" alt="Logo Git" />
 					<h1>Git Pro Tips • Édition 2020</h1>
 					<p>
-						Une présentation de <a href="http://tddsworld.com/">Christophe Porteneuve</a> chez France TV Éditions Numériques</a>
+						Une présentation de <a href="https://delicious-insights.com/">Delicious Insights</a>
 					</p>
 				</section>
 
-				<section id="whoami">
-					<h2>whoami</h2>
+				<section id="who-are-we">
+					<h2>Qui sommes-nous ?</h2>
 
-					<pre><code data-trim class="language-js">
-const christophe = {
-  family: { wife: 'Élodie', sons: ['Maxence', 'Elliott'] },
-  city: 'Paris, FR',
-  company: 'Delicious Insights',
-  trainings: ['Git Total', 'ES Total', 'Web Apps Modernes', 'Node.js', 'Webpack', 'Archi. CSS'],
-  webDevSince: 1995,
-  mightBeKnownFor: [
-    'dotJS',
-    'Paris Web',
-    'NodeSchool Paris',
-    'Prototype.js',
-    'Prototype and Script.aculo.us',
-  ],
-}
-          </code></pre>
+          <p>Christophe Porteneuve et Maxime Bréhin, + de 40 ans d’expérience cumulée 😱</p>
+
+          <p>100% Git depuis 2008</p>
+          
+          <p>Nous avons la passion de transmettre, de partager via les formations, articles, conférences, ateliers, screencasts…</p>
+
+          <img class="wtf" src="images/maxime-et-christophe-jsconf-eu.jpg" alt="Mais WTF?" />
         </section>
 
         <section id="svn-in-git">
@@ -112,18 +104,21 @@ const christophe = {
 
             <p>Arrêtez de foutre n’importe quoi dans vos commits.</p>
             <p>1 commit = 1 périmètre réduit, d’un coup, ni plus, ni moins.</p>
-            <p class="breathing">Pour y arriver, il faut maîtriser <code>add</code> et <code>reset</code>, mais aussi <code>diff</code>, <code>show</code> et bien entendu <code>commit</code>.</p>
+            <p class="breathing">Pour y arriver, il faut maîtriser <code>add</code> et <code>restore</code> / <code>reset</code>, mais aussi <code>diff</code>, <code>show</code> et bien entendu <code>commit</code>.</p>
           </section>
 
           <section id="commits-status-untracked">
-            <h2>Un statut détaillé</h2>
+            <h2>Un statut détaillé et coloré</h2>
 
 
             <pre class="command-line" data-prompt="$"><code class="language-bash">
               git config --global alias.st status
               git config --global <u>status.showUntrackedFiles</u> all
               git config --global <u>color.ui</u> auto
+              git config --global <u>color.status.untracked</u> 'white red'
+              git config --global <u>color.status.unmerged</u> 'magenta italic'
             </code></pre>
+
             <pre class="command-line" data-prompt="$" data-output="2-8"><code class="language-bash">
               git st
               …
@@ -141,7 +136,7 @@ const christophe = {
 
             <pre class="command-line" data-prompt="$" data-output="5,9"><code class="language-bash">
               git config --global <u>diff.mnemonicPrefix</u> true
-              git config --global <u>diff.renames</u> true
+              git config --global <u>diff.renames</u> copies
               git config --global <u>diff.submodule</u> log
               git config --global <u>diff.wordRegex</u> .
 
@@ -456,7 +451,7 @@ $ git lg --author=patter --grep '^Merge' -10 -- activerecord activemodel
               Utilisez <code>A...B</code>.</p>
 
             <pre class="command-line" data-prompt="$"><code class="language-bash">
-              git lg <i>[</i>--right-only<i>|</i>--left-only<i>]</i> <i>ref1</i>...<i>ref2</i>
+              git lg <i>ref1</i>...<i>ref2</i>
             </code></pre>
 
             <div class="two-columns">
@@ -595,6 +590,19 @@ To git@github.com:tdd/private-tests.git
 
             <p class="breathing">Le <strong>rebase interactif</strong> nous permet de mettre au propre nos travaux locaux avant de partager tout ça avec les copains.</p>
             <p>Raison de plus pour <strong>ne pas faire de pushes trop souvent</strong>. On est pas en SVN, les copains !  On pond des commits souvent (10–30 &times/j), mais on push plus rarement (2–3 &times/j)</p>
+          </section>
+
+          <section id="pushes-force">
+            <h2>Nettoyer après le push ?</h2>
+            <h3>Oui mais dans le respect du travail des autres</h3>
+
+            <p>On pousse seulement si on a la garantie qu’on écrase rien qu’un·e collègue aurait poussé entre temps</p>
+
+            <pre class="command-line" data-prompt="$"><code class="language-bash">
+              git push --force-with-lease
+            </code></pre>
+
+            <p>Parce-que <code>git push --force</code> ne devrait pas être le défaut !</p>
           </section>
 
           <section id="pushes-pull-merge">
@@ -782,7 +790,7 @@ To git@github.com:tdd/private-tests.git
             --hard</code>.  Préserve tes modifs locales pré-fusion.</p>
 
             <footer>Note que les sous-commandes <code>--abort</code>,
-            <code>--skip</code> et <code>--continue</code> sont disponibles pour
+            et <code>--continue</code> sont disponibles pour
             <code>merge</code>, <code>rebase</code> et
             <code>cherry-pick</code>.</footer>
           </section>
